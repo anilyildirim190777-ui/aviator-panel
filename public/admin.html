@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Panel</title>
+  <style>
+    :root{
+      --bg:#0b1020; --card:#101a33;
+      --text:#e8ecff; --muted:#a9b2d6; --line:#263154;
+      --accent:#6ee7ff; --accent2:#a78bfa; --danger:#ff5c7a; --ok:#38f6b2;
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box;font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;}
+    body{
+      margin:0; background:
+        radial-gradient(1200px 600px at 10% 0%, rgba(110,231,255,.15), transparent 60%),
+        radial-gradient(900px 500px at 90% 10%, rgba(167,139,250,.14), transparent 55%),
+        var(--bg);
+      color:var(--text);
+    }
+    .wrap{max-width:1200px;margin:0 auto;padding:28px 18px 60px;}
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:14px 16px;background: rgba(16,26,51,.6);border:1px solid rgba(38,49,84,.6);
+      border-radius: var(--radius);box-shadow: var(--shadow);backdrop-filter: blur(8px);
+    }
+    .brand{display:flex;align-items:center;gap:12px;}
+    .logo{
+      width:42px;height:42px;border-radius:14px;
+      background: linear-gradient(135deg, rgba(110,231,255,.9), rgba(167,139,250,.9));
+      box-shadow: 0 10px 24px rgba(110,231,255,.18);
+    }
+    .brand h1{font-size:16px;margin:0;letter-spacing:.4px}
+    .brand p{margin:0;font-size:12px;color:var(--muted)}
+    .btn{
+      border:0;cursor:pointer;padding:11px 13px;border-radius:14px;
+      background: linear-gradient(135deg, rgba(110,231,255,.95), rgba(167,139,250,.95));
+      color:#071022;font-weight:900;
+      box-shadow: 0 10px 24px rgba(167,139,250,.18);
+    }
+    .btn.secondary{
+      background: rgba(15,23,48,.8);
+      color: var(--text);
+      border: 1px solid rgba(38,49,84,.8);
+      box-shadow:none;
+      font-weight:800;
+    }
+    .btn.danger{
+      background: rgba(255,92,122,.14);
+      color: #ffd7df;
+      border:1px solid rgba(255,92,122,.35);
+      box-shadow:none;
+      font-weight:900;
+    }
+    .grid{display:grid;grid-template-columns: 1fr;gap:16px;margin-top:16px;}
+    .card{
+      background: linear-gradient(180deg, rgba(16,26,51,.85), rgba(15,23,48,.85));
+      border:1px solid rgba(38,49,84,.7);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:16px;
+    }
+    .card h2{margin:0 0 8px;font-size:14px}
+    .card p{margin:0 0 14px;color:var(--muted);font-size:12.5px;line-height:1.4}
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+    input, select, textarea{
+      width:100%;
+      padding:12px 12px;
+      background: rgba(11,16,32,.65);
+      border:1px solid rgba(38,49,84,.8);
+      border-radius: 14px;
+      color: var(--text);
+      outline:none;
+    }
+    textarea{min-height:90px;resize:vertical}
+    input:focus, select:focus, textarea:focus{border-color: rgba(110,231,255,.9); box-shadow: 0 0 0 3px rgba(110,231,255,.12);}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .field{flex:1;min-width:180px}
+    .result{
+      margin-top:12px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(38,49,84,.7);
+      background: rgba(11,16,32,.55);
+      color: var(--text);
+      font-size:12.5px;
+      white-space: pre-wrap;
+      min-height: 46px;
+      line-height: 1.55;
+    }
+    table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}
+    th, td{border-bottom:1px solid rgba(38,49,84,.55);padding:10px 8px;vertical-align:top}
+    th{color:var(--muted);font-weight:900;text-align:left}
+    .tag{
+      display:inline-block;
+      padding:6px 10px;border-radius:999px;
+      border:1px solid rgba(38,49,84,.7);
+      background: rgba(15,23,48,.6);
+      color: var(--muted);
+      margin-right:6px;margin-top:4px;
+      font-size:12px;
+    }
+    .ok{color:var(--ok);font-weight:900}
+    .bad{color:var(--danger);font-weight:900}
+    hr{border:0;border-top:1px solid rgba(38,49,84,.55);margin:14px 0}
+    .small{font-size:12px;color:var(--muted)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .pill{
+      padding:8px 10px;border-radius:999px;border:1px solid rgba(38,49,84,.7);
+      background: rgba(15,23,48,.55); color:var(--muted); font-size:12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>Admin Panel</h1>
+          <p>Kullanıcılar • Premium • Ban/Unban • Bildirim • Şifre</p>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="btn secondary" href="/index.html">Siteye dön</a>
+        <button class="btn danger" onclick="logout()">Çıkış</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- LOGIN -->
+      <div class="card" id="loginCard">
+        <h2>Admin Giriş</h2>
+        <p>Admin hesabınla giriş yap.</p>
+
+        <div class="row">
+          <div class="field">
+            <label>Email</label>
+            <input id="adminEmail" value="admin@admin.com" />
+          </div>
+          <div class="field">
+            <label>Şifre</label>
+            <input id="adminPass" type="password" placeholder="••••••••" />
+          </div>
+        </div>
+
+        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn" onclick="adminLogin()">Giriş</button>
+          <button class="btn secondary" onclick="loadUsers()">Kullanıcıları Getir</button>
+        </div>
+
+        <div class="result" id="loginResult">Durum: hazır</div>
+      </div>
+
+      <!-- PANEL -->
+      <div class="card" id="panelCard" style="display:none">
+        <h2>Kontrol Merkezi</h2>
+        <p class="small">Token: <span class="pill" id="tokenPill">yok</span></p>
+
+        <div class="row">
+          <div class="field" style="min-width:240px">
+            <label>Arama (email/username)</label>
+            <input id="q" placeholder="ör: test@" oninput="renderTable()" />
+          </div>
+          <div class="field">
+            <label>Filtre</label>
+            <select id="filter" onchange="renderTable()">
+              <option value="all">Hepsi</option>
+              <option value="pending">Onaysız</option>
+              <option value="banned">Banlı</option>
+              <option value="premium">Premium</option>
+            </select>
+          </div>
+          <div class="field" style="min-width:240px">
+            <label>Hızlı İşlem</label>
+            <div class="actions">
+              <button class="btn secondary" onclick="loadUsers()">Yenile</button>
+              <button class="btn danger" onclick="clearToken()">Token sıfırla</button>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- ADMIN SIFRE DEGISTIR -->
+        <h2>Admin Şifre Değiştir</h2>
+        <div class="row">
+          <div class="field">
+            <label>Eski Şifre</label>
+            <input id="oldA" type="password" placeholder="eski şifre" />
+          </div>
+          <div class="field">
+            <label>Yeni Şifre</label>
+            <input id="newA" type="password" placeholder="yeni şifre (min 6)" />
+          </div>
+          <div class="field" style="min-width:240px">
+            <label>&nbsp;</label>
+            <button class="btn secondary" onclick="changeAdminPass()">Şifreyi Değiştir</button>
+          </div>
+        </div>
+        <div class="result" id="passResult">Durum: hazır</div>
+
+        <hr>
+
+        <h2>Kullanıcı Listesi</h2>
+        <p class="small">Aksiyonlar: Onayla • Ban/Unban • Sil • Premium (1g/7g/30g) • Bildirim</p>
+
+        <div class="result" id="actionResult">Durum: hazır</div>
+
+        <div style="overflow:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Durum</th>
+                <th>Premium</th>
+                <th>İşlemler</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+
+        <hr>
+
+        <h2>Kullanıcıya Bildirim Gönder</h2>
+        <p class="small">Aşağıdan bir kullanıcı seçip mesaj gönderebilirsin.</p>
+
+        <div class="row">
+          <div class="field">
+            <label>Kullanıcı</label>
+            <select id="notifyUser"></select>
+          </div>
+          <div class="field">
+            <label>Başlık</label>
+            <input id="ntitle" placeholder="ör: Premium aktif" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Mesaj</label>
+            <textarea id="nmsg" placeholder="mesaj..."></textarea>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn secondary" onclick="sendNotify()">Gönder</button>
+        </div>
+        <div class="result" id="notifyResult">Durum: hazır</div>
+
+      </div>
+    </div>
+  </div>
+
+<script>
+let token = localStorage.getItem("admin_token") || "";
+let users = [];
+
+function setText(id, t){ document.getElementById(id).textContent = t; }
+
+function headers(){
+  return {
+    "Content-Type":"application/json",
+    "Authorization":"Bearer " + token
+  };
+}
+
+function showPanel(){
+  loginCard.style.display = "none";
+  panelCard.style.display = "";
+  tokenPill.textContent = token ? "var" : "yok";
+}
+
+function showLogin(){
+  loginCard.style.display = "";
+  panelCard.style.display = "none";
+}
+
+function clearToken(){
+  localStorage.removeItem("admin_token");
+  token = "";
+  setText("loginResult", "Token sıfırlandı. Tekrar giriş yap.");
+  showLogin();
+}
+
+function logout(){
+  clearToken();
+}
+
+async function adminLogin(){
+  try{
+    setText("loginResult", "Giriş deneniyor...");
+    const res = await fetch("/admin/login", {
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ email: adminEmail.value.trim(), password: adminPass.value })
+    });
+    const data = await res.json().catch(()=> ({}));
+
+    if(!res.ok){
+      setText("loginResult", "HTTP " + res.status + "\n" + JSON.stringify(data, null, 2));
+      return;
+    }
+
+    if(!data.token){
+      setText("loginResult", "Token gelmedi ❌\n" + JSON.stringify(data, null, 2));
+      return;
+    }
+
+    token = data.token;
+    localStorage.setItem("admin_token", token);
+    setText("loginResult", "✅ Giriş başarılı!");
+    showPanel();
+    await loadUsers();
+  }catch(e){
+    setText("loginResult", "Hata: " + e.message);
+  }
+}
+
+async function changeAdminPass(){
+  try{
+    if(!token) { setText("passResult","Önce giriş yap."); return; }
+    setText("passResult","Şifre değiştiriliyor...");
+
+    const res = await fetch("/admin/change-password", {
+      method:"POST",
+      headers: headers(),
+      body: JSON.stringify({ oldPassword: oldA.value, newPassword: newA.value })
+    });
+
+    const data = await res.json().catch(()=> ({}));
+    if(!res.ok){
+      setText("passResult","HTTP " + res.status + "\n" + JSON.stringify(data, null, 2));
+      return;
+    }
+    setText("passResult", "✅ " + (data.message || "OK"));
+    oldA.value=""; newA.value="";
+  }catch(e){
+    setText("passResult","Hata: " + e.message);
+  }
+}
+
+async function loadUsers(){
+  try{
+    if(!token){
+      setText("loginResult", "Önce giriş yap (token yok).");
+      showLogin();
+      return;
+    }
+    setText("actionResult","Kullanıcılar yükleniyor...");
+    const res = await fetch("/users", { headers: headers() });
+    const data = await res.json().catch(()=> ([]));
+    if(!res.ok){
+      setText("actionResult","HTTP " + res.status + "\n" + JSON.stringify(data, null, 2));
+      return;
+    }
+
+    users = data || [];
+    fillNotifySelect();
+    renderTable();
+    showPanel();
+    setText("actionResult", `✅ ${users.length} kullanıcı geldi.`);
+  }catch(e){
+    setText("actionResult","Hata: " + e.message);
+  }
+}
+
+function fillNotifySelect(){
+  notifyUser.innerHTML = users.map(u => `<option value="${u._id}">${u.email}</option>`).join("");
+}
+
+function matchesFilters(u){
+  const f = filter.value;
+  if(f==="pending") return !u.isApproved;
+  if(f==="banned") return !!u.isBanned;
+  if(f==="premium") return !!u.isPremium;
+  return true;
+}
+
+function matchesQuery(u){
+  const s = (q.value || "").trim().toLowerCase();
+  if(!s) return true;
+  return (u.email||"").toLowerCase().includes(s) || (u.username||"").toLowerCase().includes(s);
+}
+
+function renderTable(){
+  const list = users.filter(u => matchesFilters(u) && matchesQuery(u));
+  tbody.innerHTML = list.map(u => {
+    const status = `
+      <div class="tag ${u.isApproved ? "ok":"bad"}">${u.isApproved ? "Onaylı":"Onaysız"}</div>
+      <div class="tag ${u.isBanned ? "bad":"ok"}">${u.isBanned ? "Banlı":"Aktif"}</div>
+      <div class="tag ${u.isAdmin ? "ok":"tag"}">${u.isAdmin ? "Admin":"Kullanıcı"}</div>
+    `;
+    const prem = u.isPremium
+      ? `<span class="ok">Premium</span><div class="small">${u.premiumEndDate ? new Date(u.premiumEndDate).toLocaleString() : ""}</div>`
+      : `<span class="bad">Standart</span>`;
+
+    const approveBtn = !u.isApproved ? `<button class="btn secondary" onclick="approve('${u._id}')">Onayla</button>` : "";
+    const banBtn = !u.isBanned
+      ? `<button class="btn danger" onclick="ban('${u._id}')">Ban</button>`
+      : `<button class="btn secondary" onclick="unban('${u._id}')">Unban</button>`;
+
+    return `
+      <tr>
+        <td>
+          <div><b>${u.email}</b></div>
+          <div class="small">${u.username || "-"}</div>
+        </td>
+        <td>${status}</td>
+        <td>${prem}</td>
+        <td>
+          <div class="actions">
+            ${approveBtn}
+            ${banBtn}
+            <button class="btn secondary" onclick="premium('${u._id}', 1)">+1 Gün</button>
+            <button class="btn secondary" onclick="premium('${u._id}', 7)">+7 Gün</button>
+            <button class="btn secondary" onclick="premium('${u._id}', 30)">+30 Gün</button>
+            <button class="btn danger" onclick="delUser('${u._id}')">Sil</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+async function approve(id){
+  await doPost(`/approve/${id}`, {});
+}
+async function ban(id){
+  await doPost(`/ban/${id}`, {});
+}
+async function unban(id){
+  await doPost(`/unban/${id}`, {});
+}
+async function premium(id, days){
+  await doPost(`/premium/${id}`, { days });
+}
+async function delUser(id){
+  const ok = confirm("Kullanıcı silinsin mi?");
+  if(!ok) return;
+  await doPost(`/delete-user/${id}`, {});
+}
+
+async function sendNotify(){
+  const id = notifyUser.value;
+  const title = ntitle.value || "Bildirim";
+  const message = nmsg.value || "";
+  await doPost(`/notify/${id}`, { title, message });
+  setText("notifyResult", "✅ Gönderildi.");
+  ntitle.value=""; nmsg.value="";
+}
+
+async function doPost(url, body){
+  try{
+    setText("actionResult", "İşlem yapılıyor: " + url);
+    const res = await fetch(url, {
+      method:"POST",
+      headers: headers(),
+      body: JSON.stringify(body || {})
+    });
+    const data = await res.json().catch(()=> ({}));
+    if(!res.ok){
+      setText("actionResult", "HTTP " + res.status + "\n" + JSON.stringify(data, null, 2));
+      return;
+    }
+    setText("actionResult", "✅ " + (data.message || "OK"));
+    await loadUsers();
+  }catch(e){
+    setText("actionResult","Hata: " + e.message);
+  }
+}
+
+// boot
+(function(){
+  if(token){
+    showPanel();
+    loadUsers();
+  }else{
+    showLogin();
+  }
+})();
+</script>
+</body>
+</html>

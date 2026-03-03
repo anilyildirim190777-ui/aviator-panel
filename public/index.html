@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Aviator Analyzer</title>
+  <style>
+    :root{
+      --bg:#0b1020; --card:#101a33;
+      --text:#e8ecff; --muted:#a9b2d6; --line:#263154;
+      --accent:#6ee7ff; --accent2:#a78bfa; --danger:#ff5c7a; --ok:#38f6b2;
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box;font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;}
+    body{
+      margin:0; background:
+        radial-gradient(1200px 600px at 10% 0%, rgba(110,231,255,.15), transparent 60%),
+        radial-gradient(900px 500px at 90% 10%, rgba(167,139,250,.14), transparent 55%),
+        var(--bg);
+      color:var(--text);
+    }
+    a{color:var(--accent); text-decoration:none}
+    .wrap{max-width:1100px; margin:0 auto; padding:28px 18px 60px;}
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:14px 16px; background: rgba(16,26,51,.6); border:1px solid rgba(38,49,84,.6);
+      border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(8px);
+    }
+    .brand{display:flex; align-items:center; gap:12px;}
+    .logo{
+      width:42px; height:42px; border-radius:14px;
+      background: linear-gradient(135deg, rgba(110,231,255,.9), rgba(167,139,250,.9));
+      box-shadow: 0 10px 24px rgba(110,231,255,.18);
+    }
+    .brand h1{font-size:16px; margin:0; letter-spacing:.4px}
+    .brand p{margin:0; font-size:12px; color:var(--muted)}
+
+    .grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:16px; margin-top:16px;}
+    @media (max-width: 900px){ .grid{grid-template-columns:1fr;} }
+
+    .card{
+      background: linear-gradient(180deg, rgba(16,26,51,.85), rgba(15,23,48,.85));
+      border:1px solid rgba(38,49,84,.7);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:16px;
+    }
+    .card h2{margin:0 0 8px; font-size:14px; letter-spacing:.3px}
+    .card p{margin:0 0 14px; color:var(--muted); font-size:12.5px; line-height:1.4}
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .field{flex:1; min-width:180px}
+    label{display:block; font-size:12px; color:var(--muted); margin:0 0 6px}
+    input{
+      width:100%;
+      padding:12px 12px;
+      background: rgba(11,16,32,.65);
+      border:1px solid rgba(38,49,84,.8);
+      border-radius: 14px;
+      color: var(--text);
+      outline:none;
+    }
+    input:focus{border-color: rgba(110,231,255,.9); box-shadow: 0 0 0 3px rgba(110,231,255,.12);}
+
+    .btn{
+      border:0; cursor:pointer;
+      padding:12px 14px; border-radius:14px;
+      background: linear-gradient(135deg, rgba(110,231,255,.95), rgba(167,139,250,.95));
+      color:#071022; font-weight:800;
+      box-shadow: 0 10px 24px rgba(167,139,250,.18);
+      transition: transform .06s ease;
+    }
+    .btn:active{transform: translateY(1px);}
+    .btn.secondary{
+      background: rgba(15,23,48,.8);
+      color: var(--text);
+      border: 1px solid rgba(38,49,84,.8);
+      box-shadow:none;
+      font-weight:700;
+    }
+    .btn.danger{
+      background: rgba(255,92,122,.14);
+      color: #ffd7df;
+      border:1px solid rgba(255,92,122,.35);
+      box-shadow:none;
+      font-weight:800;
+    }
+
+    .result{
+      margin-top:12px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(38,49,84,.7);
+      background: rgba(11,16,32,.55);
+      color: var(--text);
+      font-size:12.5px;
+      white-space: pre-wrap;
+      min-height: 54px;
+      line-height: 1.55;
+    }
+    .history{
+      margin-top:10px; font-size:12px; color:var(--muted);
+      border:1px solid rgba(38,49,84,.7);
+      background: rgba(11,16,32,.35);
+      padding:12px; border-radius:14px;
+      min-height: 80px;
+      white-space: pre-wrap;
+      line-height: 1.55;
+    }
+
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(38,49,84,.7);
+      background: rgba(15,23,48,.6);
+      color: var(--muted);
+      font-size:12px;
+      margin-right:8px;
+    }
+    .dot{width:8px; height:8px; border-radius:999px; background: var(--accent);}
+    .dot.ok{background: var(--ok);}
+    .dot.bad{background: var(--danger);}
+
+    .kpi{
+      display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px;
+    }
+    @media (max-width:700px){ .kpi{grid-template-columns:1fr;} }
+    .kpi .box{
+      padding:12px; border-radius:14px;
+      border:1px solid rgba(38,49,84,.7);
+      background: rgba(11,16,32,.35);
+    }
+    .kpi .t{font-size:12px; color:var(--muted)}
+    .kpi .v{font-size:14px; font-weight:900; margin-top:6px}
+
+    .chips{margin-top:10px; display:flex; gap:8px; flex-wrap:wrap}
+    .chip{
+      padding:8px 10px; border-radius:999px;
+      border:1px solid rgba(38,49,84,.7);
+      background: rgba(15,23,48,.6);
+      color: var(--text);
+      font-size:12px;
+    }
+
+    .chartWrap{
+      margin-top:12px;
+      border:1px solid rgba(38,49,84,.7);
+      background: rgba(11,16,32,.35);
+      border-radius:14px;
+      padding:10px;
+    }
+    canvas{width:100%; height:180px; display:block;}
+
+    .insight{
+      margin-top:10px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(38,49,84,.7);
+      background: rgba(11,16,32,.35);
+      color: var(--text);
+      font-size:12.5px;
+      line-height:1.55;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>Aviator Analyzer</h1>
+          <p>Grafik + akıllı analiz</p>
+        </div>
+      </div>
+      <!-- Admin link KALDIRILDI ✅ -->
+    </div>
+
+    <!-- GUEST -->
+    <div id="guestView" class="grid">
+      <div class="card">
+        <h2>Giriş</h2>
+        <p>Analiz sadece giriş yapan kullanıcılara açık.</p>
+
+        <div class="row">
+          <div class="field">
+            <label>Email</label>
+            <input id="lemail" placeholder="test@test.com" />
+          </div>
+          <div class="field">
+            <label>Şifre</label>
+            <input id="lpassword" type="password" placeholder="••••••••" />
+          </div>
+        </div>
+
+        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn" onclick="login()">Giriş Yap</button>
+          <button class="btn secondary" onclick="prefillRegister()">Demo doldur</button>
+        </div>
+
+        <div class="result" id="authResult">Durum: hazır</div>
+      </div>
+
+      <div class="card">
+        <h2>Kayıt</h2>
+        <p>Kayıt ol → admin onayı → giriş.</p>
+
+        <div class="row">
+          <div class="field">
+            <label>Username</label>
+            <input id="username" placeholder="anil" />
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input id="email" placeholder="test@test.com" />
+          </div>
+          <div class="field" style="min-width:220px">
+            <label>Şifre</label>
+            <input id="password" type="password" placeholder="••••••••" />
+          </div>
+        </div>
+
+        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn" onclick="register()">Kayıt Ol</button>
+        </div>
+
+        <div class="result" id="regResult">Kayıt mesajı burada.</div>
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div id="appView" style="display:none" class="grid">
+      <div class="card">
+        <h2>Dashboard</h2>
+        <p>Hesap durumun.</p>
+
+        <div>
+          <span class="badge"><span class="dot ok"></span><span id="userEmail">-</span></span>
+          <span class="badge"><span class="dot" id="premDot"></span><span id="premText">-</span></span>
+          <span class="badge"><span class="dot" id="apprDot"></span><span id="apprText">-</span></span>
+        </div>
+
+        <div class="kpi">
+          <div class="box">
+            <div class="t">Premium Bitiş</div>
+            <div class="v" id="premEnd">-</div>
+          </div>
+          <div class="box">
+            <div class="t">Son Ortalama</div>
+            <div class="v" id="lastAvg">-</div>
+          </div>
+          <div class="box">
+            <div class="t">Son Karar</div>
+            <div class="v" id="lastDecision">-</div>
+          </div>
+        </div>
+
+        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn danger" onclick="logout()">Çıkış</button>
+          <button class="btn secondary" onclick="loadNotifications()">Bildirimleri Yenile</button>
+        </div>
+
+        <div class="history" id="notifBox">Bildirimler burada.</div>
+
+        <!-- PROFIL DUZENLE ✅ -->
+        <hr style="border:0;border-top:1px solid rgba(38,49,84,.6);margin:14px 0">
+
+        <h2 style="margin:0 0 8px;font-size:14px">Profil</h2>
+        <p style="margin:0 0 12px;color:var(--muted);font-size:12.5px">Kullanıcı adını ve şifreni güncelle.</p>
+
+        <div class="row">
+          <div class="field">
+            <label>Yeni Username</label>
+            <input id="newUsername" placeholder="ör: anil" />
+          </div>
+          <div class="field">
+            <label>Eski Şifre</label>
+            <input id="oldPass" type="password" placeholder="••••••••" />
+          </div>
+          <div class="field">
+            <label>Yeni Şifre</label>
+            <input id="newPass" type="password" placeholder="en az 6 karakter" />
+          </div>
+        </div>
+
+        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn secondary" onclick="updateUsername()">Username Güncelle</button>
+          <button class="btn secondary" onclick="changePassword()">Şifre Değiştir</button>
+        </div>
+
+        <div class="result" id="profileResult">Profil işlemleri burada görünecek.</div>
+      </div>
+
+      <div class="card">
+        <h2>Analiz</h2>
+        <p>Tek tek değer ekle. En az <b>5</b> veri olunca analiz yap.</p>
+
+        <div class="row">
+          <div class="field" style="min-width:260px">
+            <label>Sonuç (tek değer)</label>
+            <input id="single" placeholder="Örn: 1.20" />
+          </div>
+        </div>
+
+        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn" onclick="addValue()">Ekle</button>
+          <button class="btn secondary" onclick="removeLast()">Sonuncuyu Sil</button>
+          <button class="btn secondary" onclick="resetValues()">Sıfırla</button>
+        </div>
+
+        <div class="chips" id="chips"></div>
+
+        <div class="chartWrap">
+          <canvas id="chart" width="900" height="220"></canvas>
+        </div>
+
+        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn" onclick="analyze()">Analiz Yap</button>
+          <button class="btn secondary" onclick="demoAdd()">Demo ekle</button>
+        </div>
+
+        <div class="insight" id="insightBox">📌 İpucu: 5 veri ekleyince analiz yorumları burada çıkar.</div>
+        <div class="result" id="result">Sonuç burada.</div>
+        <div class="history" id="history">Analiz geçmişi burada.</div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+let userToken = localStorage.getItem("user_token") || "";
+let currentUser = null;
+
+let values = JSON.parse(localStorage.getItem("aviator_values") || "[]");
+let historyArr = JSON.parse(localStorage.getItem("aviator_history") || "[]");
+
+function saveLocal(){
+  localStorage.setItem("aviator_values", JSON.stringify(values));
+  localStorage.setItem("aviator_history", JSON.stringify(historyArr));
+}
+
+function showGuest(){ guestView.style.display=""; appView.style.display="none"; }
+function showApp(){ guestView.style.display="none"; appView.style.display=""; }
+
+function fmtDate(d){
+  if(!d) return "-";
+  const x = new Date(d);
+  if(Number.isNaN(x.getTime())) return "-";
+  return x.toLocaleString();
+}
+
+function updateDashboard(){
+  if(!currentUser) return;
+  userEmail.textContent = currentUser.email || "-";
+  premText.textContent = currentUser.isPremium ? "Premium" : "Standart";
+  premDot.className = "dot " + (currentUser.isPremium ? "ok" : "bad");
+  premEnd.textContent = currentUser.isPremium ? fmtDate(currentUser.premiumEndDate) : "-";
+  apprText.textContent = currentUser.isApproved ? "Onaylı" : "Bekliyor";
+  apprDot.className = "dot " + (currentUser.isApproved ? "ok" : "bad");
+
+  // profil inputunu doldur
+  if (window.newUsername && currentUser.username) newUsername.value = currentUser.username;
+}
+
+function renderValues(){
+  chips.innerHTML = values.map(v => `<span class="chip">${Number(v).toFixed(2)}</span>`).join("");
+  history.textContent = historyArr.slice(0, 12).map(x => "• " + x).join("\n") || "Analiz geçmişi burada.";
+  drawChart();
+  localInsight();
+}
+
+async function register(){
+  const res = await fetch("/register", {
+    method:"POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ username: username.value, email: email.value, password: password.value })
+  });
+  const data = await res.json();
+  regResult.textContent = data.message || JSON.stringify(data, null, 2);
+}
+
+async function login(){
+  const res = await fetch("/login", {
+    method:"POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ email: lemail.value, password: lpassword.value })
+  });
+  const data = await res.json();
+
+  if(data.token){
+    userToken = data.token;
+    localStorage.setItem("user_token", userToken);
+    currentUser = data.user;
+
+    authResult.textContent = "Giriş başarılı ✅";
+    showApp();
+    updateDashboard();
+    renderValues();
+    await loadNotifications();
+  } else {
+    authResult.textContent = data.message || JSON.stringify(data, null, 2);
+  }
+}
+
+function logout(){
+  localStorage.removeItem("user_token");
+  userToken = "";
+  currentUser = null;
+  showGuest();
+  authResult.textContent = "Çıkış yapıldı.";
+}
+
+function prefillRegister(){
+  username.value = "test";
+  email.value = "test" + Math.floor(Math.random()*9999) + "@test.com";
+  password.value = "123456";
+  lemail.value = email.value;
+  lpassword.value = "123456";
+}
+
+async function fetchMe(){
+  const res = await fetch("/me", { headers: { "Authorization":"Bearer " + userToken } });
+  if(!res.ok) return null;
+  return await res.json();
+}
+
+async function loadNotifications(){
+  const res = await fetch("/me/notifications", { headers: { "Authorization":"Bearer " + userToken } });
+  if(!res.ok){ notifBox.textContent = "Bildirimler alınamadı."; return; }
+  const list = await res.json();
+  const top = (list || []).slice(0, 10);
+  notifBox.textContent = top.length
+    ? top.map(n => `• ${new Date(n.createdAt).toLocaleString()} | ${n.title || "Bildirim"}\n  ${n.message || ""}`).join("\n\n")
+    : "Bildirim yok.";
+}
+
+// ===== PROFIL =====
+async function updateUsername(){
+  const name = (newUsername.value || "").trim();
+  if(name.length < 2){
+    profileResult.textContent = "⚠️ Username en az 2 karakter olmalı.";
+    return;
+  }
+
+  const res = await fetch("/profile", {
+    method: "POST",
+    headers: {
+      "Content-Type":"application/json",
+      "Authorization":"Bearer " + userToken
+    },
+    body: JSON.stringify({ username: name })
+  });
+
+  const out = await res.json();
+  if(!res.ok){
+    profileResult.textContent = "⚠️ " + (out.message || "Hata");
+    return;
+  }
+
+  profileResult.textContent = "✅ " + (out.message || "Profil güncellendi");
+  if(out.user) currentUser = out.user;
+  updateDashboard();
+}
+
+async function changePassword(){
+  const oldP = (oldPass.value || "");
+  const newP = (newPass.value || "");
+
+  if(newP.length < 6){
+    profileResult.textContent = "⚠️ Yeni şifre en az 6 karakter olmalı.";
+    return;
+  }
+
+  const res = await fetch("/profile/password", {
+    method: "POST",
+    headers: {
+      "Content-Type":"application/json",
+      "Authorization":"Bearer " + userToken
+    },
+    body: JSON.stringify({ oldPassword: oldP, newPassword: newP })
+  });
+
+  const out = await res.json();
+  if(!res.ok){
+    profileResult.textContent = "⚠️ " + (out.message || "Hata");
+    return;
+  }
+
+  profileResult.textContent = "✅ " + (out.message || "Şifre güncellendi");
+  oldPass.value = "";
+  newPass.value = "";
+}
+
+// ===== Tek tek veri ekleme =====
+function addValue(){
+  const raw = (single.value || "").trim().replace(",", ".");
+  const v = Number(raw);
+
+  if(!Number.isFinite(v) || v <= 0){
+    result.textContent = "⚠️ Geçerli bir sayı gir. Örn: 1.20";
+    return;
+  }
+
+  values.push(v);
+  if(values.length > 50) values = values.slice(-50);
+  single.value = "";
+  saveLocal();
+  renderValues();
+  result.textContent = `✅ Eklendi. Toplam veri: ${values.length}`;
+}
+
+function removeLast(){
+  if(values.length === 0){
+    result.textContent = "⚠️ Silinecek veri yok.";
+    return;
+  }
+  values.pop();
+  saveLocal();
+  renderValues();
+  result.textContent = `🗑️ Son değer silindi. Toplam veri: ${values.length}`;
+}
+
+function resetValues(){
+  values = [];
+  saveLocal();
+  renderValues();
+  result.textContent = "✅ Liste sıfırlandı.";
+}
+
+function demoAdd(){
+  [1.2, 2.3, 1.5, 3.1, 1.7].forEach(v => values.push(v));
+  values = values.slice(-50);
+  saveLocal();
+  renderValues();
+  result.textContent = "✅ Demo veriler eklendi.";
+}
+
+// ===== Grafik (Canvas) =====
+function drawChart(){
+  const canvas = document.getElementById("chart");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  const cssW = canvas.clientWidth || 900;
+  const cssH = 180;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.floor(cssW * dpr);
+  canvas.height = Math.floor(cssH * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  ctx.clearRect(0,0,cssW,cssH);
+
+  ctx.strokeStyle = "rgba(38,49,84,.7)";
+  ctx.lineWidth = 1;
+
+  const pad = 14;
+  const W = cssW - pad*2;
+  const H = cssH - pad*2;
+
+  if(values.length === 0){
+    ctx.fillStyle = "rgba(169,178,214,.9)";
+    ctx.font = "12px Arial";
+    ctx.fillText("Grafik için veri ekle.", pad, pad+14);
+    return;
+  }
+
+  const data = values.slice(-50);
+  const minV = Math.min(...data);
+  const maxV = Math.max(...data);
+
+  const lo = Math.max(0, minV - 0.2);
+  const hi = maxV + 0.2;
+
+  const rows = 4;
+  for(let r=0;r<=rows;r++){
+    const y = pad + (H * r/rows);
+    ctx.beginPath();
+    ctx.moveTo(pad, y);
+    ctx.lineTo(pad+W, y);
+    ctx.stroke();
+  }
+
+  function yOf(val){
+    const t = (val - lo) / (hi - lo || 1);
+    return pad + H - (H * t);
+  }
+
+  ctx.strokeStyle = "rgba(255,92,122,.35)";
+  ctx.beginPath(); ctx.moveTo(pad, yOf(1.5)); ctx.lineTo(pad+W, yOf(1.5)); ctx.stroke();
+
+  ctx.strokeStyle = "rgba(110,231,255,.25)";
+  ctx.beginPath(); ctx.moveTo(pad, yOf(2.0)); ctx.lineTo(pad+W, yOf(2.0)); ctx.stroke();
+
+  ctx.strokeStyle = "rgba(110,231,255,.95)";
+  ctx.lineWidth = 2;
+
+  const step = W / Math.max(1, data.length - 1);
+  ctx.beginPath();
+  data.forEach((v,i)=>{
+    const x = pad + step*i;
+    const y = yOf(v);
+    if(i===0) ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  const last = data[data.length-1];
+  const lx = pad + step*(data.length-1);
+  const ly = yOf(last);
+
+  ctx.fillStyle = "rgba(167,139,250,.95)";
+  ctx.beginPath();
+  ctx.arc(lx, ly, 4, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(169,178,214,.9)";
+  ctx.font = "12px Arial";
+  ctx.fillText(`min ${minV.toFixed(2)}`, pad, pad+12);
+  ctx.fillText(`max ${maxV.toFixed(2)}`, pad, pad+26);
+  ctx.fillText(`son ${last.toFixed(2)}`, pad, pad+40);
+}
+
+// ===== Lokal ipucu =====
+function localInsight(){
+  if(values.length < 3){
+    insightBox.textContent = "📌 İpucu: Değerleri tek tek ekle. En az 5 olunca analiz daha anlamlı çıkar.";
+    return;
+  }
+  const data = values.slice(-10);
+  const n = data.length;
+  const mean = data.reduce((a,b)=>a+b,0)/n;
+  const lowRate = data.filter(v=>v<=1.5).length / n;
+
+  let lowStreak = 0;
+  for(let i=data.length-1;i>=0;i--){
+    if(data[i] <= 1.5) lowStreak++;
+    else break;
+  }
+
+  let msg = `📌 Son ${n} veri özeti: ort ${mean.toFixed(2)}, düşük oran ${(lowRate*100).toFixed(0)}%`;
+  if(lowStreak >= 3) msg += ` • Son ${lowStreak} tur düşük seri var (temkinli).`;
+  insightBox.textContent = msg;
+}
+
+// ===== Analiz =====
+async function analyze(){
+  if(values.length < 5){
+    result.textContent = "⚠️ Analiz için en az 5 veri ekle.";
+    return;
+  }
+
+  const res = await fetch("/analyze", {
+    method:"POST",
+    headers: {
+      "Content-Type":"application/json",
+      "Authorization": "Bearer " + userToken
+    },
+    body: JSON.stringify({ lastResults: values })
+  });
+
+  const out = await res.json();
+
+  if(!res.ok || out.message){
+    result.textContent = "⚠️ " + (out.message || "Analiz hatası");
+    return;
+  }
+
+  insightBox.textContent = "🧠 " + (out.insight || "Analiz tamamlandı.");
+
+  const nice =
+    `🎯 Karar: ${out.decision}\n`+
+    `⚠️ Risk: ${out.riskLevel}/5\n`+
+    `📊 Güven: %${out.confidence}\n`+
+    `💯 Skor: ${out.score}/100\n\n`+
+    (out.notes ? out.notes.join("\n") : "");
+
+  result.textContent = nice;
+
+  const ort = out.metrics?.mean != null ? out.metrics.mean.toFixed(2) : "-";
+  lastAvg.textContent = ort;
+  lastDecision.textContent = `${out.decision} • Risk ${out.riskLevel}/5`;
+
+  historyArr.unshift(`${new Date().toLocaleString()} | ${out.decision} | Risk ${out.riskLevel}/5 | Skor ${out.score}/100`);
+  historyArr = historyArr.slice(0, 50);
+  saveLocal();
+  renderValues();
+}
+
+// Enter ile ekle
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && document.activeElement === single) {
+    e.preventDefault();
+    addValue();
+  }
+});
+
+// ===== boot =====
+(async function boot(){
+  if(!userToken){
+    showGuest();
+    return;
+  }
+
+  const me = await fetchMe();
+  if(!me){
+    logout();
+    return;
+  }
+
+  currentUser = me;
+  showApp();
+  updateDashboard();
+  renderValues();
+  await loadNotifications();
+})();
+</script>
+</body>
+</html>
