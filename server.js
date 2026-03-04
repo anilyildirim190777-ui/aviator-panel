@@ -164,4 +164,27 @@ app.post("/analyze", auth, (req, res) => {
 
 // ===== SERVER =====
 const PORT = process.env.PORT || 3000;
+app.get("/setup-admin", async (req, res) => {
+  const email = "admin@admin.com";
+  const pass = "123456";
+
+  let u = await User.findOne({ email });
+
+  if (!u) {
+    u = new User({
+      username: "admin",
+      email,
+      password: await bcrypt.hash(pass, 10),
+      isAdmin: true,
+      isApproved: true
+    });
+    await u.save();
+    return res.json({ message: "Admin oluşturuldu", email, pass });
+  }
+
+  u.isAdmin = true;
+  u.isApproved = true;
+  await u.save();
+  res.json({ message: "Admin yetkisi verildi", email, pass });
+});
 app.listen(PORT, () => console.log("Server çalışıyor 🚀"));
